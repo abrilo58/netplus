@@ -1,31 +1,40 @@
 // Add this code to the very top of your script.js file
 
 (function() {
-    // The official URL of your course page. This is the only page
-    // that is allowed to be the referrer.
-    const allowedReferrer = 'https://nas.io/comptia_bootcamp/courses/keut';
-    
-    // The URL to redirect users to if they are not coming from the allowed page.
+    // This is the "password" or token that must be in the URL.
+    const accessKey = 'token';
+    const accessValue = 'comptia-access-granted';
+
+    // The URL to redirect users to if they don't have access.
     const redirectUrl = 'https://nas.io/comptia_bootcamp/courses/keut';
 
-    // Get the referrer of the current page. The referrer is the URL
-    // of the page that linked to this one.
-    const referrer = document.referrer;
+    // Create a URLSearchParams object to easily read the URL's query parameters.
+    const urlParams = new URLSearchParams(window.location.search);
 
-    // Check if the referrer starts with the allowed URL.
-    // We use startsWith to account for any extra URL parameters that might be added.
-    // If the user came from your nas.io page, the referrer will match.
-    // If they typed the URL directly or came from another site, it will not match.
-    if (!referrer || !referrer.startsWith(allowedReferrer)) {
-        // If the referrer is not the allowed one, redirect the user.
-        // We use window.location.replace so the user can't click the "back" button
-        // to get to the protected page.
-        window.location.replace(redirectUrl);
+    // Check 1: Does the user already have a valid session?
+    // sessionStorage is temporary storage that clears when the browser tab is closed.
+    if (sessionStorage.getItem('hasCompTIAAccess') === 'true') {
+        // If they have access from a previous page view in this session, do nothing.
+        return;
     }
+
+    // Check 2: Is the correct token in the URL?
+    if (urlParams.get(accessKey) === accessValue) {
+        // If the token is correct, grant access and save it to the session.
+        sessionStorage.setItem('hasCompTIAAccess', 'true');
+        // Then, do nothing and let the user see the page.
+        return;
+    }
+    
+    // If both checks fail, the user does not have access. Redirect them.
+    // We use window.location.replace so the "back" button doesn't lead to a loop.
+    window.location.replace(redirectUrl);
+
 })();
 
 // The rest of your existing JavaScript code in script.js goes below this.
 // ...
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // This script is intentionally left empty as per your request
